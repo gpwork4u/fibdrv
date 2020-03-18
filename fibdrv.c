@@ -6,6 +6,8 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/mutex.h>
+#include <linux/slab.h>
+#include <linux/uaccess.h>
 
 MODULE_LICENSE("Dual MIT/GPL");
 MODULE_AUTHOR("National Cheng Kung University, Taiwan");
@@ -23,6 +25,7 @@ static dev_t fib_dev = 0;
 static struct cdev *fib_cdev;
 static struct class *fib_class;
 static DEFINE_MUTEX(fib_mutex);
+static ktime_t kt;
 
 static long long fib_sequence(long long k)
 {
@@ -37,6 +40,14 @@ static long long fib_sequence(long long k)
     }
 
     return f[k];
+}
+
+static long long fib_time_proxy(long long k)
+{
+    kt = ktime_get();
+    long long result = fib_sequence(k);
+    kt = ktime_sub(ktime_get(), kt);
+    return result;
 }
 
 static int fib_open(struct inode *inode, struct file *file)
@@ -60,7 +71,11 @@ static ssize_t fib_read(struct file *file,
                         size_t size,
                         loff_t *offset)
 {
-    return (ssize_t) fib_sequence(*offset);
+    char *kbuf = kmalloc(sizeof(char) * size, GFP_USER);
+    long long result = fib_time_proxy(*offset);
+    snprintf(kbuf, size, "%lld", result);
+    copy_to_user(buf, kbuf, size);
+    return (ssize_t) kt;
 }
 
 /* write operation is skipped */
