@@ -9,9 +9,8 @@
 
 int main()
 {
-    long long sz;
-
-    char buf[1];
+    long long kt;
+    char buf[100];
     char write_buf[] = "testing writing";
     int offset = 100; /* TODO: try test something bigger than the limit */
 
@@ -22,26 +21,30 @@ int main()
     }
 
     for (int i = 0; i <= offset; i++) {
-        sz = write(fd, write_buf, strlen(write_buf));
-        printf("Writing to " FIB_DEV ", returned the sequence %lld\n", sz);
+        kt = write(fd, write_buf, strlen(write_buf));
+        printf("Writing to " FIB_DEV ", returned the sequence %lld\n", kt);
     }
-
+    FILE *f;
+    f = fopen("fast_fib_clz.txt", "w");
     for (int i = 0; i <= offset; i++) {
         lseek(fd, i, SEEK_SET);
-        sz = read(fd, buf, 1);
+        kt = read(fd, buf, 100);
+        fprintf(f, "%d %lld\n", i, kt);
         printf("Reading from " FIB_DEV
                " at offset %d, returned the sequence "
-               "%lld.\n",
-               i, sz);
+               "%s.\n",
+               i, buf);
     }
+    fprintf(f, "\n");
+    fclose(f);
 
     for (int i = offset; i >= 0; i--) {
         lseek(fd, i, SEEK_SET);
-        sz = read(fd, buf, 1);
+        kt = read(fd, buf, 100);
         printf("Reading from " FIB_DEV
                " at offset %d, returned the sequence "
-               "%lld.\n",
-               i, sz);
+               "%s.\n",
+               i, buf);
     }
 
     close(fd);
