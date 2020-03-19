@@ -1,7 +1,7 @@
 CONFIG_MODULE_SIG = n
 TARGET_MODULE := fibdrv
-
-obj-m := $(TARGET_MODULE).o
+TARGET_MODULES := fibdrv fibdrv_fast fibdrv_fast_clz
+obj-m := $(TARGET_MODULE).o fibdrv_fast.o fibdrv_fast_clz.o
 ccflags-y := -std=gnu99 -Wno-declaration-after-statement
 
 KDIR := /lib/modules/$(shell uname -r)/build
@@ -39,3 +39,15 @@ check: all
 	$(MAKE) unload
 	@diff -u out scripts/expected.txt && $(call pass)
 	@scripts/verify.py
+
+test: all
+	for MODULE in $(TARGET_MODULES);do\
+		sudo rmmod $$MODULE || true >/dev/null;\
+		sudo insmod $$MODULE.ko;\
+		sudo ./client $$MODULE > out;\
+		sudo rmmod $$MODULE || true >/dev/null;\
+		echo $$MODULE;\
+	done
+	gnuplot fib_plot.gp
+
+

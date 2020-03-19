@@ -7,13 +7,15 @@
 
 #define FIB_DEV "/dev/fibonacci"
 
-int main()
+int main(int argc, char *argv[])
 {
     long long kt;
     char buf[100];
+    char filename[20] = "test.txt";
     char write_buf[] = "testing writing";
     int offset = 100; /* TODO: try test something bigger than the limit */
-
+    if (argc >= 2)
+        snprintf(filename, 20, "%s.txt", argv[1]);
     int fd = open(FIB_DEV, O_RDWR);
     if (fd < 0) {
         perror("Failed to open character device");
@@ -25,7 +27,7 @@ int main()
         printf("Writing to " FIB_DEV ", returned the sequence %lld\n", kt);
     }
     FILE *f;
-    f = fopen("fast_fib_clz.txt", "w");
+    f = fopen(filename, "w");
     for (int i = 0; i <= offset; i++) {
         lseek(fd, i, SEEK_SET);
         kt = read(fd, buf, 100);
