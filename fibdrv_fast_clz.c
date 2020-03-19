@@ -27,14 +27,6 @@ static struct class *fib_class;
 static DEFINE_MUTEX(fib_mutex);
 static ktime_t kt;
 
-static long long lpow(long long k, long long exp)
-{
-    long long result = 1;
-    for (long long i = 0; i < exp; i++)
-        result *= k;
-    return result;
-}
-
 static long long fast_fib_clz(long long k)
 {
     long long a, b;
@@ -47,7 +39,7 @@ static long long fast_fib_clz(long long k)
     unsigned long long u = 1;
     for (int i = start; i >= 1; i--) {
         long long t1 = a * (2 * b - a);
-        long long t2 = lpow(b, 2) + lpow(a, 2);
+        long long t2 = b * b + a * a;
         a = t1;
         b = t2;
         if ((k & (u << (i - 1))) > 0) {
