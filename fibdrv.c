@@ -46,7 +46,7 @@ static long long fib_time_proxy(long long k)
 {
     kt = ktime_get();
     long long result = fib_sequence(k);
-    kt = ktime_sub(ktime_get(), kt);
+    kt = ktime_to_ns(ktime_sub(ktime_get(), kt));
     return result;
 }
 
